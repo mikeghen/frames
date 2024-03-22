@@ -85,7 +85,7 @@ const EventForm = () => {
         />
       </div>
       <div>
-        <label htmlFor="participant">Participant:</label>
+        <label htmlFor="participant">NFT Gating:</label>
         <select
           id="participant"
           name="participant"
@@ -93,7 +93,7 @@ const EventForm = () => {
           onChange={handleChange}
           required
         >
-          <option value="">NFT Gating</option>
+          <option value="">NFT</option>
           <option value="Participant 1">RiBT</option>
           <option value="Participant 2">Based Fellas</option>
           <option value="Participant 3">Basepaint</option>
