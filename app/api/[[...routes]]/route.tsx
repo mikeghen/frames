@@ -6,6 +6,10 @@ import { createWalletClient, http, createPublicClient } from "viem";
 // import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import { PinataFDK } from "pinata-fdk";
+import { devtools } from 'frog/dev'
+import { serveStatic } from 'frog/serve-static'
+
+
 import abi from "./abi.json";
 
 const fdk = new PinataFDK({
@@ -188,6 +192,8 @@ app.transaction("/buy/:price", async (c) => {
     value: parseEther(`${price}`),
   });
 });
+
+devtools(app, { serveStatic })
 
 export const GET = handle(app);
 export const POST = handle(app);
