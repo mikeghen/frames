@@ -5,10 +5,16 @@ import { handle } from "frog/next";
 import { createWalletClient, http, createPublicClient } from "viem";
 // import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
+import {
+  getFarcasterUserNFTBalances,
+  FarcasterUserNFTBalancesInput,
+  FarcasterUserNFTBalancesOutput,
+  TokenBlockchain,
+  NFTType,
+} from "@airstack/frames";
 import { PinataFDK } from "pinata-fdk";
-import { devtools } from 'frog/dev'
-import { serveStatic } from 'frog/serve-static'
-
+import { devtools } from "frog/dev";
+import { serveStatic } from "frog/serve-static";
 
 import abi from "./abi.json";
 
@@ -17,7 +23,45 @@ const fdk = new PinataFDK({
   pinata_gateway: "",
 });
 
-const CONTRACT = process.env.CONTRACT_ADDRESS as `0x` || ""
+
+type CheckUserNFTBalancesArgs = {
+  fid: number;
+  contractAddresses: string[]; // Assuming contract addresses are needed as part of the input
+};
+
+// The function to check if a user has NFT balances
+async function checkUserNFTBalances({ fid, contractAddresses }: CheckUserNFTBalancesArgs): Promise<boolean> {
+  const variables: FarcasterUserNFTBalancesInput = {
+    fid,
+    tokenType: NFTType.ERC721, // Assuming you want to check for both types
+    chains: [
+      TokenBlockchain.Ethereum,
+      TokenBlockchain.Base,
+      // Add or remove chains as necessary
+    ],
+    limit: 100, // Adjust the limit as needed
+  };
+
+  try {
+    const {
+      data,
+      error,
+    }: FarcasterUserNFTBalancesOutput = await getFarcasterUserNFTBalances(variables);
+
+
+
+    // Assuming 'data' contains the list of NFT balances, and you want to check if there are any
+    // Adjust the logic based on the actual structure of 'data'
+    return data 
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+
+
+const CONTRACT = (process.env.CONTRACT_ADDRESS as `0x`) || "";
 
 // const account = privateKeyToAccount((process.env.PRIVATE_KEY as `0x`) || "");
 
@@ -63,137 +107,161 @@ async function remainingSupply() {
   }
 }
 
+async function getFrame() {
+  try {
+    const frame = await publicClient.readContract({
+      address: CONTRACT,
+      abi: abi,
+      functionName: "getFrame",
+    });
+    console.log(frame);
+    return frame;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+
+}
+
 const app = new Frog({
   assetsPath: "/",
   basePath: "/api",
 });
 
 app.use(
-  "/ad",
-  fdk.analyticsMiddleware({ frameId: "hats-store", customId: "ad" }),
-);
-app.use(
   "/finish",
-  fdk.analyticsMiddleware({ frameId: "hats-store", customId: "purchased" }),
+  fdk.analyticsMiddleware({ frameId: "frame-store", customId: "purchased" })
 );
 
 app.frame("/", async (c) => {
   const balance = await remainingSupply();
-  console.log(balance);
+  const frame = await getFrame();
+  const userNFTs = await checkUserNFTBalances({
+    fid: c.frameData?.fid as number,
+    contractAddresses: ['0xe2E73Bc9952142886424631709E382f6BC169E18'], // Replace with actual contract addresses
+  })
+  let price;
+  if (userNFTs && frame.gateToken && userNFTs.includes(frame.gateToken)) {
+    price = frame.priceWif;
+  } else {
+    price = frame.priceWifout;
+  }
+  console.log(price); // Do something with the price
   if (typeof balance === "number" && balance === 0) {
     return c.res({
-      image:
-        "https://dweb.mypinata.cloud/ipfs/QmeeXny8775RQBZDhSppkRN15zn5nFjQUKeKAvYvdNx986",
+      image: (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "white",
+          }}
+        >
+          <h1 style={{ color: "blue"}}>TITLE</h1>
+          <h1 style={{ color: "red"}}>DESCRIPTION </h1>
+          <h1 style={{ color: "green"}}>Event is Full, Sorry!</h1>
+          <img
+            src="https://shuk.nyc3.cdn.digitaloceanspaces.com/0x4645F04cdB1F03088948cb54A56A22acE39882e7/14"
+            alt="background"
+            style={{ width: "100%" }}
+            title="hello world"
+          />
+        </div>
+      ),
       imageAspectRatio: "1:1",
       intents: [
-        <Button.Link href="https://warpcast.com/~/channel/pinata">
-          Join the Pinata Channel
+        <Button.Link href="https://warpcast.com/scheinberg">
+          Make your own frame
         </Button.Link>,
       ],
-      title: "Pinta Hat Store - SOLD OUT",
+      title: "Party Fun Time - SOLD OUT",
     });
   } else {
     return c.res({
       action: "/finish",
-      image:
-        "https://dweb.mypinata.cloud/ipfs/QmeC7uQZqkjmc1T6sufzbJWQpoeoYjQPxCXKUSoDrXfQFy",
+      image: (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "white",
+          }}
+        >
+          <h1 style={{ color: "blue"}}>TITLE</h1>
+          <h1 style={{ color: "red"}}>DESCRIPTION </h1>
+          <h1 style={{ color: "green"}}>DATE</h1>
+          <h1 style={{ color: "purple"}}>LOCATION</h1>
+          <img
+            src="https://shuk.nyc3.cdn.digitaloceanspaces.com/0x4645F04cdB1F03088948cb54A56A22acE39882e7/14"
+            alt="background"
+            style={{ width: "100%" }}
+            title="hello world"
+          />
+        </div>
+      ),
       imageAspectRatio: "1:1",
       intents: [
-        <Button.Transaction target="/buy/0.0005">
-          Buy for 0.005 ETH
-        </Button.Transaction>,
-        <Button action="/ad">Watch ad for 1/2 off</Button>,
+        <Button.Link href="https://warpcast.com/scheinberg">Share</Button.Link>,
+        <Button.Transaction target="/buy/[price]"> 
+          Buy a Ticket
+        </Button.Transaction>, // SET PRICE IN THE TARGET
       ],
-      title: "Pinta Hat Store",
+      title: "Party Fun Time",
     });
   }
 });
 
 app.frame("/finish", (c) => {
   return c.res({
-    image:
-      "https://dweb.mypinata.cloud/ipfs/QmZPysm8ZiR9PaNxNGQvqdT2gBjdYsjNskDkZ1vkVs3Tju",
+    image: (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "white",
+        }}
+      >
+        <h1 style={{ color: "blue"}}>Have Fun!</h1>
+        <img
+          src="https://shuk.nyc3.cdn.digitaloceanspaces.com/0x4645F04cdB1F03088948cb54A56A22acE39882e7/14"
+          alt="background"
+          style={{ width: "100%" }}
+          title="hello world"
+        />
+      </div>
+    ),
     imageAspectRatio: "1:1",
     intents: [
-      <Button.Link href="https://warpcast.com/~/channel/pinata">
-        Join the Pinata Channel
+      <Button.Link href="https://warpcast.com/scheinberg">
+        Make your own frame
       </Button.Link>,
     ],
-    title: "Pinta Hat Store",
+    title: "Party Time",
   });
 });
 
-app.frame("/ad", async (c) => {
-  return c.res({
-    action: "/coupon",
-    image:
-      "https://dweb.mypinata.cloud/ipfs/QmeUmBtAMBfwcFRLdoaCVJUNSXeAPzEy3dDGomL32X8HuP",
-    imageAspectRatio: "1:1",
-    intents: [
-      <TextInput placeholder="Wallet Address (not ens)" />,
-      <Button>Receive Coupon</Button>,
-    ],
-    title: "Pinta Hat Store",
-  });
-});
 
-// app.frame("/coupon", async (c) => {
-//   const supply = await remainingSupply();
-//   const address = c.inputText;
-//   const balance = await checkBalance(address);
-
-//   if (
-//     typeof balance === "number" &&
-//     balance < 1 &&
-//     typeof supply === "number" &&
-//     supply > 0
-//   ) {
-//     const { request: mint } = await publicClient.simulateContract({
-//       account,
-//       address: CONTRACT,
-//       abi: abi.abi,
-//       functionName: "mint",
-//       args: [address],
-//     });
-//     const mintTransaction = await walletClient.writeContract(mint);
-//     console.log(mintTransaction);
-
-//     const mintReceipt = await publicClient.waitForTransactionReceipt({
-//       hash: mintTransaction,
-//     });
-//     console.log("Mint Status:", mintReceipt.status);
-//   }
-
-//   return c.res({
-//     action: "/finish",
-//     image:
-//       "https://dweb.mypinata.cloud/ipfs/QmeUmBtAMBfwcFRLdoaCVJUNSXeAPzEy3dDGomL32X8HuP",
-//     imageAspectRatio: "1:1",
-//     intents: [
-//       <Button.Transaction target="/buy/0.0025">
-//         Buy for 0.0025 ETH
-//       </Button.Transaction>,
-//     ],
-//     title: "Pinta Hat Store",
-//   });
-// });
-
-app.transaction("/buy/:price", async (c) => {
-  
-  const price = c.req.param('price')
+app.transaction("/buy/[price]", async (c) => {
+  const price = c.req.param("price");
 
   return c.contract({
     abi: abi.abi,
     // @ts-ignore
     chainId: "eip155:84532",
-    functionName: "buyHat",
+    functionName: "buy",
     args: [c.frameData?.fid],
     to: CONTRACT,
     value: parseEther(`${price}`),
   });
 });
 
-devtools(app, { serveStatic })
+devtools(app, { serveStatic });
 
 export const GET = handle(app);
 export const POST = handle(app);
