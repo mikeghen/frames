@@ -15,7 +15,7 @@ const EventForm = () => {
     fullPrice: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
@@ -23,7 +23,7 @@ const EventForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     console.log("Form Data Submitted:", formData);
     // Add your submit logic here
