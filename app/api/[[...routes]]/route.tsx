@@ -30,7 +30,7 @@ type CheckUserNFTBalancesArgs = {
 };
 
 // The function to check if a user has NFT balances
-async function checkUserNFTBalances({ fid, contractAddresses }: CheckUserNFTBalancesArgs): Promise<boolean> {
+async function checkUserNFTBalances({ fid, contractAddresses }: CheckUserNFTBalancesArgs) {
   const variables: FarcasterUserNFTBalancesInput = {
     fid,
     tokenType: NFTType.ERC721, // Assuming you want to check for both types
@@ -58,6 +58,11 @@ async function checkUserNFTBalances({ fid, contractAddresses }: CheckUserNFTBala
   }
 }
 
+interface Frame {
+  gateToken?: string; // Using optional property, assuming gateToken might not be present
+  priceWif: number; // Adjust the type according to your actual data
+  priceWifout: number; // Adjust the type according to your actual data
+}
 
 
 
@@ -80,7 +85,7 @@ async function checkBalance(address: any) {
   try {
     const balance = await publicClient.readContract({
       address: CONTRACT,
-      abi: abi.abi,
+      abi: abi,
       functionName: "balanceOf",
       args: [address, 0],
     });
@@ -96,7 +101,7 @@ async function remainingSupply() {
   try {
     const balance = await publicClient.readContract({
       address: CONTRACT,
-      abi: abi.abi,
+      abi: abi,
       functionName: "totalSupply",
     });
     const readableBalance = Number(balance);
@@ -107,20 +112,25 @@ async function remainingSupply() {
   }
 }
 
-async function getFrame() {
-  try {
-    const frame = await publicClient.readContract({
+interface Frame {
+  gateToken?: string; // Using optional property, assuming gateToken might not be present
+  priceWif: number; // Adjust the type according to your actual data
+  priceWifout: number; // Adjust the type according to your actual data
+}
+
+async function getFrame(): Promise<Frame> {
+    try {
+    const frameData = await publicClient.readContract({
       address: CONTRACT,
       abi: abi,
       functionName: "getFrame",
     });
-    console.log(frame);
-    return frame;
+    // Assuming frameData is directly usable, otherwise, you might need to map or parse it
+    return frameData as Frame; // Type assertion, adjust according to actual data structure
   } catch (error) {
     console.log(error);
-    return error;
+    throw new Error("Failed to get frame data");
   }
-
 }
 
 const app = new Frog({
@@ -136,17 +146,21 @@ app.use(
 app.frame("/", async (c) => {
   const balance = await remainingSupply();
   const frame = await getFrame();
-  const userNFTs = await checkUserNFTBalances({
-    fid: c.frameData?.fid as number,
-    contractAddresses: ['0xe2E73Bc9952142886424631709E382f6BC169E18'], // Replace with actual contract addresses
-  })
+
+  // TODO: GET BALANCE OF NFT TO CHANGE PRICE
+  // const userNFTs = await checkUserNFTBalances({
+  //   fid: c.frameData?.fid as number,
+  //   contractAddresses: ['0xe2E73Bc9952142886424631709E382f6BC169E18'], // Replace with actual contract addresses
+  // })
   let price;
-  if (userNFTs && frame.gateToken && userNFTs.includes(frame.gateToken)) {
-    price = frame.priceWif;
-  } else {
-    price = frame.priceWifout;
-  }
-  console.log(price); // Do something with the price
+  // if (userNFTs && Array.isArray(userNFTs) && frame.gateToken && userNFTs.includes(frame.gateToken)) {
+  //       price = frame.priceWif;
+  // } else {
+  //   price = frame.priceWifout;
+  // }
+  // console.log(price); // Do something with the price
+  // PLACEHODER FOR PRICE
+  price = frame.priceWifout
   if (typeof balance === "number" && balance === 0) {
     return c.res({
       image: (
@@ -206,7 +220,7 @@ app.frame("/", async (c) => {
       imageAspectRatio: "1:1",
       intents: [
         <Button.Link href="https://warpcast.com/scheinberg">Share</Button.Link>,
-        <Button.Transaction target="/buy/[price]"> 
+        <Button.Transaction target="/buy/price"> 
           Buy a Ticket
         </Button.Transaction>, // SET PRICE IN THE TARGET
       ],
@@ -247,11 +261,11 @@ app.frame("/finish", (c) => {
 });
 
 
-app.transaction("/buy/[price]", async (c) => {
-  const price = c.req.param("price");
+app.transaction("/buy/price", async (c) => {
+  let price = 20
 
   return c.contract({
-    abi: abi.abi,
+    abi: abi,
     // @ts-ignore
     chainId: "eip155:84532",
     functionName: "buy",
