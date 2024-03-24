@@ -7,6 +7,10 @@ import { createWalletClient, http, createPublicClient } from "viem";
 import { baseSepolia } from "viem/chains";
 import { PinataFDK } from "pinata-fdk";
 import abi from "./abi.json";
+import { devtools } from "frog/dev";
+import { serveStatic } from "frog/serve-static";
+
+
 
 const fdk = new PinataFDK({
   pinata_jwt: process.env.PINATA_JWT || "",
@@ -79,7 +83,7 @@ app.frame("/", async (c) => {
   if (typeof balance === "number" && balance === 0) {
     return c.res({
       image:
-        "https://dweb.mypinata.cloud/ipfs/QmeeXny8775RQBZDhSppkRN15zn5nFjQUKeKAvYvdNx986",
+        "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
       imageAspectRatio: "1:1",
       intents: [
         <Button.Link href="https://warpcast.com/~/channel/pinata">
@@ -92,13 +96,13 @@ app.frame("/", async (c) => {
     return c.res({
       action: "/finish",
       image:
-        "https://dweb.mypinata.cloud/ipfs/QmeC7uQZqkjmc1T6sufzbJWQpoeoYjQPxCXKUSoDrXfQFy",
+        "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
       imageAspectRatio: "1:1",
       intents: [
         <Button.Transaction target="/buy/0.0005">
-          Buy for 0.005 ETH
+          Buy it now for 0.005 ETH
         </Button.Transaction>,
-        <Button action="/ad">Watch ad for 1/2 off</Button>,
+        <Button action="/ad">Share it now!</Button>,
       ],
       title: "Pinta Hat Store",
     });
@@ -108,7 +112,7 @@ app.frame("/", async (c) => {
 app.frame("/finish", (c) => {
   return c.res({
     image:
-      "https://dweb.mypinata.cloud/ipfs/QmZPysm8ZiR9PaNxNGQvqdT2gBjdYsjNskDkZ1vkVs3Tju",
+      "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
     imageAspectRatio: "1:1",
     intents: [
       <Button.Link href="https://warpcast.com/~/channel/pinata">
@@ -123,7 +127,7 @@ app.frame("/ad", async (c) => {
   return c.res({
     action: "/coupon",
     image:
-      "https://dweb.mypinata.cloud/ipfs/QmeUmBtAMBfwcFRLdoaCVJUNSXeAPzEy3dDGomL32X8HuP",
+      "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
     imageAspectRatio: "1:1",
     intents: [
       <TextInput placeholder="Wallet Address (not ens)" />,
@@ -189,5 +193,7 @@ app.transaction("/buy/:price", async (c) => {
   });
 });
 
+devtools(app, { serveStatic });
+ 
 export const GET = handle(app);
 export const POST = handle(app);
