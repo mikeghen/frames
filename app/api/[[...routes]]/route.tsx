@@ -83,7 +83,7 @@ app.frame("/", async (c) => {
   if (typeof balance === "number" && balance === 0) {
     return c.res({
       image:
-        "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
+        "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmUpDL4MAZUuRpFuELyP7833eBZ2dPBQoJxm9X3q8wHtbc",
       imageAspectRatio: "1:1",
       intents: [
         <Button.Link href="https://warpcast.com/~/channel/pinata">
@@ -96,7 +96,7 @@ app.frame("/", async (c) => {
     return c.res({
       action: "/finish",
       image:
-        "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
+        "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmUpDL4MAZUuRpFuELyP7833eBZ2dPBQoJxm9X3q8wHtbc",
       imageAspectRatio: "1:1",
       intents: [
         <Button.Transaction target="/buy/0.0005">
@@ -112,7 +112,7 @@ app.frame("/", async (c) => {
 app.frame("/finish", (c) => {
   return c.res({
     image:
-      "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
+      "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmUpDL4MAZUuRpFuELyP7833eBZ2dPBQoJxm9X3q8wHtbc",
     imageAspectRatio: "1:1",
     intents: [
       <Button.Link href="https://warpcast.com/~/channel/pinata">
@@ -127,7 +127,7 @@ app.frame("/ad", async (c) => {
   return c.res({
     action: "/coupon",
     image:
-      "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmYcDrVzFYSpGPPcNJmyHFGLzEuwsztb7AVR8PEJYdeepN",
+      "https://fuchsia-native-cuckoo-397.mypinata.cloud/ipfs/QmUpDL4MAZUuRpFuELyP7833eBZ2dPBQoJxm9X3q8wHtbc",
     imageAspectRatio: "1:1",
     intents: [
       <TextInput placeholder="Wallet Address (not ens)" />,
